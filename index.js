@@ -1,17 +1,36 @@
 require('dotenv').config();
+const path = require('path')
 const express = require('express');
 const { connectToMongoDB } = require('./connect');
 const urlRoute = require('./routes/url');
+const staticRoute = require('./routes/staticRouter')
 const URL = require('./models/url');
 
 const app = express();
 const PORT = process.env.PORT || 8001;
 
+app.set('view engine', "ejs")
+app.set('views',path.resolve("./views"))
+
+
 // Middleware to parse JSON
 app.use(express.json());
 
+// middlewares it is basically used to parse the form data 
+
+app.use(express.urlencoded({extended:false}))
+
+app.get('/test', async (req,res) =>{
+  const allUrls = await URL.find({});
+
+  return res.render('home.ejs',{
+urls: allUrls,
+  });
+})
+
 // Correct route path with leading slash
 app.use('/url', urlRoute);
+app.use("/",staticRoute)
 
 app.get('/:shortId', async (req, res) => {
   const shortId = req.params.shortId;
