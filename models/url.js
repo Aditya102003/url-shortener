@@ -14,6 +14,11 @@ const urlSchema = new mongoose.Schema({
   visitHistory: [{
     timestamp: { type: Number }
   }],
+  // the given id is referencing to the users
+  createdBy:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"users",
+  }
 }, { timestamps: true });
 
 const URL = mongoose.model('URL', urlSchema);

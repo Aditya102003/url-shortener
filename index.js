@@ -2,9 +2,14 @@ require('dotenv').config();
 const path = require('path')
 const express = require('express');
 const { connectToMongoDB } = require('./connect');
+
+const {restrictToLoggedserOnly,checkAuth}  =require('./middleware/auth')
+
+const URL = require('./models/url');
 const urlRoute = require('./routes/url');
 const staticRoute = require('./routes/staticRouter')
-const URL = require('./models/url');
+const userRoute = require('./routes/user')
+const cookieParser = require('cookie-parser') 
 
 const app = express();
 const PORT = process.env.PORT || 8001;
@@ -20,6 +25,10 @@ app.use(express.json());
 
 app.use(express.urlencoded({extended:false}))
 
+
+
+
+
 app.get('/test', async (req,res) =>{
   const allUrls = await URL.find({});
 
@@ -29,8 +38,13 @@ urls: allUrls,
 })
 
 // Correct route path with leading slash
-app.use('/url', urlRoute);
-app.use("/",staticRoute)
+
+app.use(cookieParser());
+
+app.use('/url',restrictToLoggedserOnly,urlRoute);
+app.use('/user', userRoute);
+app.use("/",checkAuth,staticRoute)
+
 
 app.get('/:shortId', async (req, res) => {
   const shortId = req.params.shortId;
